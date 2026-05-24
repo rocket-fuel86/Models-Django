@@ -1,37 +1,26 @@
 from django.db import models
-from django.db.models import Q, UniqueConstraint, CheckConstraint
 from django.core.validators import MinValueValidator, MaxValueValidator
-
-# class Author(models.Model):
-#     name = models.CharField(max_length=100)
-#
-#
-# class Book(models.Model):
-#     title = models.CharField(max_length=200)
-#     author = models.ForeignKey(Author, on_delete=models.CASCADE)
 
 
 class Category(models.Model):
+    """Категорії товарів"""
     name = models.CharField(max_length=100, unique=True, verbose_name="Назва категорії")
     slug = models.SlugField(max_length=120, unique=True,
-                            help_text="URL-friendly назва")
+                            help_text="URL-friendly назва")  # https://netpeak.net/uk/blog/shcho-take-url-slug-i-yak-zrobiti-yogo-seo-druzhnim/
     description = models.TextField(blank=True, verbose_name="Опис")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
 
-    class Meta:
+    class Meta:  # мета інформація про модель, яка не є полями бази даних, але впливає на поведінку моделі, наприклад, на те, як вона відображається в адміністративній панелі або як сортуються записи
         verbose_name = "Категорія"
         verbose_name_plural = "Категорії"
         ordering = ['name']
-
-        constraints = [
-            UniqueConstraint(fields=['name'], name='unique_category_name'),
-        ]
 
     def __str__(self):
         return self.name
 
 
 class Manufacturer(models.Model):
+    """Виробники (компанії)"""
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва виробника")
     country = models.CharField(max_length=100, verbose_name="Країна")
     website = models.URLField(max_length=200, blank=True, null=True, verbose_name="Веб-сайт")
@@ -48,42 +37,42 @@ class Manufacturer(models.Model):
         verbose_name_plural = "Виробники"
         ordering = ['name']
 
-        constraints = [
-            models.UniqueConstraint(fields=['name'], name='unique_manufacturer_name')
-        ]
-
     def __str__(self):
         return self.name
 
 
 class Product(models.Model):
+    """Товари / Продукти"""
     STATUS_CHOICES = [
         ('draft', 'Чернетка'),
         ('published', 'Опубліковано'),
         ('archived', 'Архівовано'),
     ]
 
+    # основна інформація
     name = models.CharField(max_length=200, verbose_name="Назва товару")
     slug = models.SlugField(max_length=250, unique=True, verbose_name="Slug")
     description = models.TextField(verbose_name="Опис")
     short_description = models.CharField(max_length=300, blank=True, verbose_name="Короткий опис")
 
+    # зв'язки (ForeignKey + ManyToMany)
     category = models.ForeignKey(
         Category,
-        on_delete=models.PROTECT,
-        related_name='products',
+        on_delete=models.PROTECT,  # не дозволяємо видаляти категорію, якщо є товари
+        related_name='products',  # дозволяє отримувати всі товари категорії через category.products
         verbose_name="Категорія"
     )
 
     manufacturer = models.ForeignKey(
         Manufacturer,
-        on_delete=models.SET_NULL,
+        on_delete=models.SET_NULL,  # якщо виробник видаляється, то поле стає null, але товар не видаляється
         null=True,
-        blank=True,
+        blank=True,  # дозволяє залишити поле порожнім при створенні/редагуванні товару
         related_name='products',
         verbose_name="Виробник"
     )
 
+    # ціни та кількість
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -99,6 +88,7 @@ class Product(models.Model):
     )
     stock_quantity = models.PositiveIntegerField(default=0, verbose_name="Кількість на складі")
 
+    # додаткові поля різних типів
     sku = models.CharField(max_length=50, unique=True, verbose_name="Артикул (SKU)")
     weight = models.FloatField(null=True, blank=True, verbose_name="Вага (кг)")
     is_available = models.BooleanField(default=True, verbose_name="Доступний для продажу")
@@ -110,10 +100,12 @@ class Product(models.Model):
     )
     tags = models.JSONField(default=list, blank=True, verbose_name="Теги")  # сучасний спосіб зберігання списку
 
+    # дата і час
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата оновлення")
     published_at = models.DateField(null=True, blank=True, verbose_name="Дата публікації")
 
+    # ManyToMany приклад (якщо потрібні додаткові категорії)
     additional_categories = models.ManyToManyField(
         Category,
         related_name='additional_products',
@@ -130,16 +122,9 @@ class Product(models.Model):
             models.Index(fields=['status']),
         ]
 
-        constraints = [
-            UniqueConstraint(fields=['name'], name='unique_product_name'),
-
-            CheckConstraint(condition=Q(price__gte=0), name='check_product_price_positive'),
-
-            CheckConstraint(condition=Q(stock_quantity__gte=0), name='check_stock_quantity_positive'),
-        ]
-
     def __str__(self):
         return self.name
 
     def get_final_price(self):
+        """Повертає фінальну ціну з урахуванням знижки"""
         return self.discount_price if self.discount_price else self.price

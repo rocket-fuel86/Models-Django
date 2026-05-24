@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=Unbounded:wght@700&display=swap');
+
+    :root {
+        --bg: #0d0d0f;
+        --surface: #16161a;
+        --card: #1e1e24;
+        --border: #2a2a32;
+        --accent: #6c63ff;
+        --accent2: #a78bfa;
+        --green: #34d399;
+        --red: #f87171;
+        --text: #e8e8f0;
+        --muted: #6b6b80;
+        --radius: 10px;
+    }
+
+    .authors-page * {
+        box-sizing: border-box;
+    }
+
+    .authors-page {
+        font-family: 'Geologica', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 40px 24px 80px;
+    }
+
+    .page-title {
+        font-family: 'Unbounded', sans-serif;
+        font-size: clamp(22px, 4vw, 36px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+        background: linear-gradient(135deg, var(--accent2), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .page-sub {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 36px;
+        font-weight: 300;
+    }
+
+    .flash {
+        padding: 12px 18px;
+        border-radius: var(--radius);
+        margin-bottom: 28px;
+        font-size: 14px;
+        font-weight: 500;
+        border-left: 3px solid var(--green);
+        background: rgba(52, 211, 153, 0.08);
+        color: var(--green);
+    }
+
+    .add-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px 28px 24px;
+        margin-bottom: 36px;
+    }
+
+    .card-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--accent2);
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    .add-form-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    @media (max-width: 640px) {
+        .add-form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field-group label {
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+    }
+
+    .field-group input {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 7px;
+        padding: 10px 14px;
+        font-family: 'Geologica', sans-serif;
+        font-size: 14px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s;
+        width: 100%;
+    }
+
+    .field-group input:focus {
+        border-color: var(--accent);
+    }
+
+    .field-group input::placeholder {
+        color: var(--muted);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 7px;
+        font-family: 'Geologica', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.15s, transform 0.15s;
+        white-space: nowrap;
+    }
+
+    .btn:hover {
+        opacity: 0.85;
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    .btn-add {
+        background: var(--accent);
+        color: #fff;
+        padding: 10px 24px;
+        align-self: flex-end;
+    }
+
+    .btn-save {
+        background: var(--surface);
+        color: var(--accent2);
+        border: 1px solid var(--accent);
+        font-size: 12px;
+        padding: 7px 14px;
+    }
+
+    .btn-delete {
+        background: transparent;
+        color: var(--red);
+        border: 1px solid rgba(248,113,113,0.35);
+        font-size: 12px;
+        padding: 7px 14px;
+    }
+
+    .btn-delete:hover {
+        background: rgba(248,113,113,0.1);
+        opacity: 1;
+    }
+
+    .table-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+
+    .table-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .table-header-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .count-badge {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: 12px;
+        font-family: monospace;
+        color: var(--accent2);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead th {
+        padding: 12px 20px;
+        text-align: left;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--muted);
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+    }
+
+    tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background: rgba(108, 99, 255, 0.04);
+    }
+
+    td {
+        padding: 14px 20px;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .id-cell {
+        font-family: monospace;
+        font-size: 12px;
+        color: var(--muted);
+        width: 50px;
+    }
+
+    .name-cell {
+        font-weight: 500;
+    }
+
+    .num-cell {
+        font-family: monospace;
+        color: var(--muted);
+    }
+
+    .rating-cell {
+        font-family: monospace;
+        font-weight: 600;
+        color: var(--accent2);
+    }
+
+    .actions-cell {
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    .edit-form {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .edit-form input[type="text"],
+    .edit-form input[type="number"] {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-family: 'Geologica', sans-serif;
+        font-size: 13px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .edit-form input[type="text"] {
+        width: 160px;
+    }
+
+    .edit-form input[type="number"] {
+        width: 80px;
+    }
+
+    .edit-form input:focus {
+        border-color: var(--accent);
+    }
+
+    .empty-state {
+        padding: 64px 24px;
+        text-align: center;
+        color: var(--muted);
+    }
+
+    .empty-state .es-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .empty-state p {
+        font-size: 14px;
+    }
+
+    .authors-page {
+        margin-left: calc(-50vw + 50%);
+        width: 100vw;
+    }
+</style>
+
+<div class="authors-page">
+
+    <div class="page-title">Товари</div>
+
+    {% if message %}
+        <div class="flash">{{ message }}</div>
+    {% endif %}
+
+    <div class="add-card">
+        <div class="card-label">Новий товар</div>
+
+        <form method="POST" class="add-form-row">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+
+            <div class="field-group">
+                <label>Назва</label>
+                <input name="name">
+            </div>
+
+            <div class="field-group">
+                <label>Slug</label>
+                <input name="slug">
+            </div>
+
+            <div class="field-group">
+                <label>SKU</label>
+                <input name="sku">
+            </div>
+
+            <div class="field-group">
+                <label>Ціна</label>
+                <input name="price">
+            </div>
+
+            <div class="field-group">
+                <label>Знижка</label>
+                <input name="discount_price">
+            </div>
+
+            <div class="field-group">
+                <label>Склад</label>
+                <input name="stock_quantity">
+            </div>
+
+            <div class="field-group">
+                <label>Опис</label>
+                <textarea name="description"></textarea>
+            </div>
+
+            <div class="field-group">
+                <label>Категорія</label>
+                <select name="category">
+                    {% for c in categories %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label>Виробник</label>
+                <select name="manufacturer">
+                    <option value="">---</option>
+                    {% for m in manufacturers %}
+                        <option value="{{ m.id }}">{{ m.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="draft">draft</option>
+                    <option value="published">published</option>
+                    <option value="archived">archived</option>
+                </select>
+            </div>
+
+            <button class="btn btn-add">Створити</button>
+        </form>
+    </div>
+
+    <div class="table-card">
+
+        <div class="table-header">
+            <span class="table-header-title">Товари</span>
+            <span class="count-badge">{{ products|length }}</span>
+        </div>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Назва</th>
+                    <th>SKU</th>
+                    <th>Ціна</th>
+                    <th>Склад</th>
+                    <th>Опис</th>
+                    <th>Категорія</th>
+                    <th>Виробник</th>
+                    <th>Status</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for p in products %}
+            <tr>
+
+                <td class="id-cell">#{{ p.id }}</td>
+
+                <td colspan="9">
+
+                    <form method="POST" class="edit-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update">
+                        <input type="hidden" name="id" value="{{ p.id }}">
+
+                        <input type="text" name="name" value="{{ p.name }}">
+                        <input type="text" name="sku" value="{{ p.sku }}">
+                        <input type="number" step="0.01" name="price" value="{{ p.price }}">
+
+                        <input type="number" name="stock_quantity" value="{{ p.stock_quantity }}">
+
+                        <input type="text" name="description" value="{{ p.description }}">
+
+                        <select name="category">
+                            {% for c in categories %}
+                                <option value="{{ c.id }}"
+                                    {% if p.category_id == c.id %}selected{% endif %}>
+                                    {{ c.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <select name="manufacturer">
+                            <option value="">---</option>
+                            {% for m in manufacturers %}
+                                <option value="{{ m.id }}"
+                                    {% if p.manufacturer_id == m.id %}selected{% endif %}>
+                                    {{ m.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <select name="status">
+                            <option value="draft" {% if p.status == 'draft' %}selected{% endif %}>draft</option>
+                            <option value="published" {% if p.status == 'published' %}selected{% endif %}>published</option>
+                            <option value="archived" {% if p.status == 'archived' %}selected{% endif %}>archived</option>
+                        </select>
+
+                        <button class="btn btn-save">Save</button>
+
+                    </form>
+
+                </td>
+
+                <td class="actions-cell">
+                    <form method="POST" style="display:inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="{{ p.id }}">
+                        <button class="btn btn-delete">Delete</button>
+                    </form>
+                </td>
+
+            </tr>
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

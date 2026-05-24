@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}CRUD App{% endblock %}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=Unbounded:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Geologica', sans-serif;
+            background: #0d0d0f;
+            color: #e8e8f0;
+        }
+
+        .topbar {
+            background: #16161a;
+            border-bottom: 1px solid #2a2a32;
+            padding: 14px 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .brand {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 16px;
+            color: #a78bfa;
+            margin-right: 20px;
+        }
+
+        .nav a {
+            color: #e8e8f0;
+            text-decoration: none;
+            font-size: 14px;
+            margin-right: 14px;
+            opacity: 0.8;
+        }
+
+        .nav a:hover {
+            opacity: 1;
+            color: #a78bfa;
+        }
+
+        .container {
+            padding: 24px;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand">CRUD Panel</div>
+        <div class="nav">
+            <a href="/categories/">Категорії</a>
+            <a href="/products/">Товари</a>
+            <a href="/manufacturers/">Виробники</a>
+        </div>
+    </div>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
